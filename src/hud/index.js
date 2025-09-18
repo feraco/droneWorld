@@ -178,4 +178,3 @@ const hudElement = ReactDOM.render(
   document.getElementById('hud')
 )
 
-export { hudElement }
