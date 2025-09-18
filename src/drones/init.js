@@ -14,11 +14,6 @@ const initDroneFactory = (msg, data) => {
   droneFactory = () => {
     const drone = data.mesh.clone()
     drone.up.set(0, 0, 1)
-    // Rotate to make it look more like a quadcopter orientation
-    drone.rotation.x = Math.PI / 2
-    drone.rotation.z = Math.PI / 4
-    // Scale it larger to be more visible and quadcopter-like
-    drone.scale.set(0.3, 0.3, 0.2)
     drone.name = `drone-${drone.id}`
     return drone
   }
@@ -29,10 +24,6 @@ PubSub.subscribe('x.assets.drone.loaded', initDroneFactory)
 
 const buildPilotDrone = () => {
   const pilotDrone = droneFactory()
-  // Additional quadcopter-like properties for the pilot drone
-  pilotDrone.scale.set(0.25, 0.25, 0.15)
-  pilotDrone.rotation.x = Math.PI / 2
-  pilotDrone.rotation.z = 0
   pilotDrone.userData.altitude = NaN
   pilotDrone.userData.speed = 0
   pilotDrone.userData.lastPosition = pilotDrone.position.clone()
@@ -93,9 +84,6 @@ PubSub.subscribe('x.drones.factory.ready', buildPilotDrone)
 
 const spawnDrone = (circle = true, phase = 0) => {
   const drone = droneFactory()
-  // Make spawned drones look more like quadcopters
-  drone.scale.set(0.2, 0.2, 0.12)
-  drone.rotation.x = Math.PI / 2
   drone.userData.life = 100
   scene.add(drone)
   drone.lastPosition = drone.position.clone()
@@ -109,8 +97,6 @@ const spawnDrone = (circle = true, phase = 0) => {
         radius * Math.sin(timestamp / 1000 / 3 + phase),
         300 + 50 * Math.cos(timestamp / 1000 + phase)
       )
-      // Add subtle rotation to make it look more dynamic
-      drone.rotation.z = timestamp / 1000 / 2 + phase
     } else {
       drone.position.copy(camera.position.clone()
         .add(camera.getWorldDirection(camVec).multiplyScalar(100)))
