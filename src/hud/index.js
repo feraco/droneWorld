@@ -178,3 +178,12 @@ const hudElement = ReactDOM.render(
   document.getElementById('hud')
 )
 
+// Export data and functions needed by particles module
+export const hudData = {
+  targetsInFront: []
+}
+
+export const selectNearestGunTarget = () => {
+  return null
+}
+
