@@ -3,17 +3,9 @@ import nipplejs from 'nipplejs'
 import lock from 'pointer-lock'
 import { mobileAndTabletcheck } from '../utils/isMobile'
 import FlyControls from '../modules/FlyControls'
-// import {OrbitControls} from '../modules/OrbitControls'
-import { triggerExplosion } from '../particles'
 import PubSub from '../events'
 import { scene, camera, renderer } from '../index'
-import {
-  Mesh,
-  SphereBufferGeometry,
-  MeshPhongMaterial,
-  Vector3
-} from 'three'
-import { selectNearestTargetInSight, hudElement } from '../hud'
+import { Vector3 } from 'three'
 import AutoPilot from './autopilot'
 
 const controls = {
@@ -45,15 +37,6 @@ const initControls = (msg, data) => {
     })
     // hide verbose text
     document.getElementById('verbosePane').style.display = 'none'
-    // get button X
-    const buttonX = document.getElementById('buttonX')
-    const pressX = (event) => {
-      event.target.style.opacity = 0.5
-      fireBullet({ button: 2 })
-      setTimeout(() => { event.target.style.opacity = 0.3 }, 250)
-    }
-    buttonX.addEventListener('click', pressX, false)
-    buttonX.addEventListener('touchstart', pressX, false)
 
     controls.module = new FlyControls(camera, touchPaneLeft, nippleLook)
   } else {
@@ -102,58 +85,6 @@ const initControls = (msg, data) => {
   keyboardJS.bind('space', e => {
     PubSub.publishSync('x.toggle.play')
   })
-
-  const bullet = new Mesh(
-    new SphereBufferGeometry(1, 5, 5),
-    new MeshPhongMaterial({ color: 0x111111 })
-  )
-  const fireBullet = e => {
-    if (!pilotDrone) return
-
-    if (e.button === 0) { // left click
-      PubSub.publishSync('x.drones.gun.start', pilotDrone)
-      PubSub.publishSync('x.camera.shake.start', 5)
-      pilotDrone.gunClock.start()
-    } else if (e.button === 2) { // right click
-      const target = selectNearestTargetInSight()
-      if (target === null || target.destroyed) return
-
-      const fire = bullet.clone()
-      fire.position.copy(pilotDrone.position)
-      scene.add(fire)
-      PubSub.publishSync('x.drones.missile.start', fire)
-
-      const BulletContructor = function () {
-        this.alive = true
-        this.object = fire
-        this.loop = (timestamp, delta) => {
-          if (!this.alive) return
-          const vec = target.position.clone().sub(fire.position)
-          if (vec.length() < 10) {
-            this.alive = false
-            triggerExplosion(target)
-            PubSub.publishSync('x.drones.missile.stop', fire)
-            PubSub.publishSync('x.drones.explosion', target)
-            target.userData.life -= 25
-            hudElement.forceUpdate()
-          }
-          const newDir = vec.normalize().multiplyScalar(10 * delta / 16.66)
-          fire.position.add(newDir)
-        }
-      }
-
-      const callback = new BulletContructor()
-      PubSub.publishSync('x.loops.push', callback)
-    }
-  }
-  renderer.domElement.addEventListener('mousedown', fireBullet, false)
-  renderer.domElement.addEventListener('mouseup', (e) => {
-    if (e.button === 0) {
-      PubSub.publishSync('x.drones.gun.stop', pilotDrone)
-      PubSub.publishSync('x.camera.shake.stop')
-      pilotDrone.gunClock.stop()
-    }
-  }, false)
 }
 PubSub.subscribe('x.drones.pilotDrone.loaded', initControls)
 

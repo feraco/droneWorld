@@ -5,7 +5,6 @@ import {
 } from 'three'
 import { scene, camera, loops } from '../index'
 import PubSub from '../events'
-import { triggerExplosion } from '../particles'
 
 let droneFactory = {
   ready: false
@@ -27,7 +26,6 @@ PubSub.subscribe('x.assets.drone.loaded', initDroneFactory)
 
 const buildPilotDrone = () => {
   const pilotDrone = droneFactory()
-  pilotDrone.gunClock = new Clock(false)
   pilotDrone.userData.altitude = NaN
   pilotDrone.userData.speed = 0
   pilotDrone.userData.lastPosition = pilotDrone.position.clone()
@@ -88,7 +86,6 @@ PubSub.subscribe('x.drones.factory.ready', buildPilotDrone)
 
 const spawnDrone = (circle = true, phase = 0) => {
   const drone = droneFactory()
-  drone.lockClock = new Clock(false)
   drone.userData.life = 100
   scene.add(drone)
   drone.lastPosition = drone.position.clone()
@@ -108,21 +105,7 @@ const spawnDrone = (circle = true, phase = 0) => {
     }
     drone.velocity = drone.position.clone().sub(drone.lastPosition).multiplyScalar(1000 / delta)
     drone.lastPosition = drone.position.clone()
-    if (!drone.destroyed && drone.userData.life <= 50 && !drone.smoking) {
-      PubSub.publish('x.drones.smoke.start', drone)
-    }
-    if (!drone.destroyed && drone.userData.life <= 0) {
-      PubSub.publish('x.drones.destroy', drone)
-      drone.destroyed = true
-      triggerExplosion(drone)
-    }
   }
-  PubSub.subscribe('x.drones.destroy', (msg, deadDrone) => {
-    if (deadDrone.id === drone.id) {
-      PubSub.publish('x.loops.remove', droneLoop)
-    }
-  })
-  PubSub.publish('x.hud.register.target', drone)
   loops.push(droneLoop)
 }
 
@@ -134,6 +117,4 @@ const initTargets = () => {
   spawnDrone(true, Math.PI)
 }
 PubSub.subscribe('x.drones.factory.ready', initTargets)
-PubSub.subscribe('x.drones.destroy', () => spawnDrone(true, Math.random() * 2 * Math.PI))
 
-export default initDroneFactory
