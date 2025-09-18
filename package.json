@@ -63,8 +63,8 @@
     "analyze": "source-map-explorer 'build/**/*.js'",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider node scripts/start.js",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider node scripts/build.js",
     "test": "node scripts/test.js",
     "lint": "standard | snazzy",
     "lint-fix": "standard --fix | snazzy"
@@ -154,6 +154,7 @@
     "stats.js": "^0.17.0",
     "three": "^0.118.0",
     "upng-js": "^2.1.0",
+    "wasm-pack": "^0.12.1",
     "webpack-glsl-loader": "^1.0.1",
     "worker-loader": "blaze33/worker-loader#574be467bd146e8dd1d9d3d103c16f95f04c2f42"
   },
